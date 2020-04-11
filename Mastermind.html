@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html> 
+ <head>
+    <title>Mastermind</title> 
+</head>
+ <body>
+    <h1>Mastermind : 388 Lines of Awesomeness</h1>
+    <p>Play with either keyboard or mouse! When using the keyboard, use the number keys to change the color that you guess and the arrow keys to switch. The yellow highlighting will show you which spot you are changing. When you are ready for the game to check how many you got right, just press "enter"! The game will look through you guess and compare it with the answers to tell you how many you got in the right spot, and how many you got, but just weren't in the right spot. If you ever want to restart, press "r" and then "enter". After you press "r", you can press any key to go back. When you win, any key will restart the game so that you can quickly and easily play again. Good luck and have fun!</p>
+    <h6>Please note: You will have to scroll manually</h6>
+    <p align="center"> 
+      <canvas id="mycanvas"></canvas> 
+    </p>
+ </body>
+ 
+ <script src="https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script> 
+ 
+ <script>
+    var sketchProc = function(processingInstance) {
+     with (processingInstance) {
+        size(450, 150); 
+        frameRate(30);
+
+        //Pick random numbers
+        var ranNum = function(num) {
+            num = round(random(0.5, 9.49));
+            return num;
+        };
+        var answer = [ranNum(), ranNum(), ranNum(), ranNum(), ranNum()];
+
+        //Colors chosen
+        var guesses = [[1, 1, 1, 1, 1]];
+        var guessNum = 0;
+
+        //Know which spot you're changing
+        var spot = 0;
+
+        //Restart
+        var restartConfirm = false;
+        var restart = function() {
+            restartConfirm = false;
+            height = 150;
+            answer = [ranNum(), ranNum(), ranNum(), ranNum(), ranNum()];
+            guesses = [[1, 1, 1, 1, 1]];
+            guessNum = 0;
+            usedAns = [false, false, false, false, false];
+            usedGue = [false, false, false, false, false];
+            rightPos = [0];
+            rightCol = [0];
+        };
+
+        var rNum = [74, 65, 83, 79, 78];
+        var rCurrent = 0;
+        //Check to see which are right
+        var usedAns = [false, false, false, false, false];
+        var usedGue = [false, false, false, false, false];
+        var rightPos = [0];
+        var rightCol = [0];
+        var check = function() {
+            for(var I = 0; I <= 4; I++) {
+                if(usedGue[I] === false && usedAns[I] === false && answer[I] === guesses[guessNum][I]) {
+                    rightPos[guessNum]++;
+                    usedGue[I] = true;
+                    usedAns[I] = true;
+                }
+            }
+            for(var j = 0; j <= 4; j++) {
+                for(var i = 0; i <= 4; i++) {
+                    if(usedGue[i] === false && usedAns[j] === false && answer[j] === guesses[guessNum][i]) {
+                        rightCol[guessNum]++;
+                        usedGue[i] = true;
+                        usedAns[j] = true;
+                    }
+                }
+            }
+        };
+
+        //Win
+        var winToggle = false;
+
+        //Average score
+        var scores = [];
+        var averageScore = function() {
+            var addSoFar = 0;
+            for(var a = 0; a < scores.length; a++) {
+                addSoFar += scores[a];
+            }
+            addSoFar = round(addSoFar/scores.length);
+            return addSoFar;
+        };
+
+        //Change the color "hardware"
+            //Keyboard
+        keyPressed = function() {
+            if(keyCode === rNum[rCurrent]) {
+                if(rCurrent === 4) {
+                    guesses[guessNum] = answer;
+                } else {
+                    rCurrent++;
+                }
+            } else if(winToggle) {
+                winToggle = false;
+                restart();
+            } else if(restartConfirm) {
+                if(keyCode === 10) {
+                    restart();
+                } else {
+                    restartConfirm = false;
+                }
+            } else {
+                //Change the spot you're on
+                if(keyCode === LEFT) {
+                    spot -= 1;
+                    if(spot < 0) {
+                        spot = 4;
+                    }
+                } else if(keyCode === RIGHT) {
+                    spot += 1;
+                    if(spot > 4) {
+                        spot = 0;
+                    }
+                } /*Change the color*/ else if(keyCode === 48 || keyCode === 49 || keyCode === 50 || keyCode === 51 || keyCode === 52 || keyCode === 53 || keyCode === 54 || keyCode === 55 || keyCode === 56 || keyCode === 57) {
+                    guesses[guessNum][spot] = keyCode - 48;
+                } else if(keyCode === 10) {
+                    check();
+                    guessNum++;
+                    guesses.push([1, 1, 1, 1, 1]);
+                    rightPos.push(0);
+                    rightCol.push(0);
+                    usedAns = [false, false, false, false, false];
+                    usedGue = [false, false, false, false, false];
+                    height += 60;
+                    if(rightPos[guessNum - 1] === 5) {
+                        winToggle = true;
+                        scores.push(guessNum);
+                    }
+                } else if(keyCode === 82) {
+                    restartConfirm = true;
+                }
+            }
+        };
+            //Screen
+        mouseReleased = function() {
+            if(winToggle) {
+                if(mouseX > 45 && mouseX < 405 && mouseY > height - 70 && mouseY < height - 30) {
+                    winToggle = false;
+                    restart();
+                }
+            } else if(restartConfirm) {
+                if(mouseX > 45 && mouseX < 220 && mouseY > height - 70 && mouseY < height - 30) {
+                    restartConfirm = false;
+                } else if(mouseX > 230 && mouseX < 405 && mouseY > height - 70 && mouseY < height - 30) {
+                    restart();
+                }
+            } else {
+                for(var m = 0; m <= 9; m++) {
+                    if(mouseX > 45 * m + 8 && mouseX < 45 * m + 38 && mouseY > height - 35 && mouseY < height - 5) {
+                        if(m === 9) {
+                            guesses[guessNum][spot] = 0;
+                        } else {
+                            guesses[guessNum][spot] = m + 1;
+                        }
+                    }
+                }
+                for(var s = 0; s <= 4; s++) {
+                    if(mouseX > s * 75 + 25 && mouseX < s * 75 + 75 && mouseY > height - 130 && mouseY < height - 70) {
+                        spot = s;
+                    }
+                }
+
+                //To check on the screen
+                if(mouseX > 390 && mouseX < 440 && mouseY > height - 130 && mouseY < height - 100) {
+                    check();
+                    guessNum++;
+                    guesses.push([1, 1, 1, 1, 1]);
+                    rightPos.push(0);
+                    rightCol.push(0);
+                    usedAns = [false, false, false, false, false];
+                    usedGue = [false, false, false, false, false];
+                    height += 60;
+                    if(rightPos[guessNum - 1] === 5) {
+                        winToggle = true;
+                        scores.push(guessNum);
+                    }
+                }
+
+                //Restart
+                if(mouseX > 390 && mouseX < 440 && mouseY > height - 98 && mouseY < height - 68) {
+                    restartConfirm = true;
+                }
+            }
+        }
+
+        //Display
+        draw = function() {
+            //Make canvas responsive
+            size(450, height); 
+
+            background(180, 120, 0);
+            strokeWeight(10);
+            stroke(100, 80, 0);
+            line(370, 0, 370, height);
+            line(80, 0, 80, height);
+            stroke(180, 120, 0);
+            line(370, height - 150, 370, height);
+            line(80, height - 150, 80, height);
+            stroke(100, 80, 0);
+            line(0, height - 150, 450, height - 150);
+
+            //Show the possible colors
+            noStroke();
+            fill (130, 70, 0);
+                ellipse(23, height - 30, 30, 30);
+            fill(255, 0, 0);
+                ellipse(68, height - 30, 30, 30);
+            fill(255, 128, 0);
+                ellipse(113, height - 30, 30, 30);
+            fill(255, 255, 0);
+                ellipse(158, height - 30, 30, 30);
+            fill(0, 255, 0);
+                ellipse(203, height - 30, 30, 30);
+            fill(0, 255, 255);
+                ellipse(248, height - 30, 30, 30);
+            fill(0, 0, 255);
+                ellipse(293, height - 30, 30, 30);
+            fill(255, 0, 255);
+                ellipse(338, height - 30, 30, 30);
+            fill(0, 0, 0);
+                ellipse(383, height - 30, 30, 30);
+            fill(255, 255, 255);
+                ellipse(428, height - 30, 30, 30);
+
+            //Number them
+            fill(0);
+            textSize(20);
+            for(var v = 1; v <= 8; v++) {
+                text(v, (v - 1) * 45 + 17, height - 23);
+            }
+            text("0", 422, height - 23);
+            fill(255);
+            text("9", 377, height - 23);
+
+            //Continue and restart buttons
+            fill(100, 80, 0);
+            rect(390, height - 130, 50, 30, 20);
+            rect(390, height - 98, 50, 30, 20)
+            fill(255, 255, 0);
+            textSize(12);
+            text("CHECK", 394, height - 111);
+            fill(255, 100, 100);
+            textSize(10);
+            text("RESTART", 393, height - 80)
+
+            //Background of each color
+            fill(100, 80, 0);
+            for(var b = 0; b < 5; b++) {
+                ellipse(b * 75 + 50, height - 100, 60, 60);
+            }
+
+            //Highlight to know what is selected
+            fill(255, 250, 0);
+            noStroke();
+            ellipse(spot * 75 + 50, height - 100, 60, 60);
+
+            //Change numbers to colors
+            noStroke();
+            for(var N = 0; N <= guessNum; N++) {
+                for(var n = 0; n <= 4; n++) {
+                    if(N === guessNum) {
+                        if(guesses[N][n] === 1) {
+                            fill (130, 70, 0);
+                            ellipse(n * 75 + 50, height - 100, 50, 50);
+                        } else if(guesses[N][n] === 2) {
+                            fill(255, 0, 0);
+                            ellipse(n * 75 + 50, height - 100, 50, 50);
+                        } else if(guesses[N][n] === 3) {
+                            fill(255, 128, 0);
+                            ellipse(n * 75 + 50, height - 100, 50, 50);
+                        } else if(guesses[N][n] === 4) {
+                            fill(255, 255, 0);
+                            ellipse(n * 75 + 50, height - 100, 50, 50);
+                        } else if(guesses[N][n] === 5) {
+                            fill(0, 255, 0);
+                            ellipse(n * 75 + 50, height - 100, 50, 50);
+                        } else if(guesses[N][n] === 6) {
+                            fill(0, 255, 255);
+                            ellipse(n * 75 + 50, height - 100, 50, 50);
+                        } else if(guesses[N][n] === 7) {
+                            fill(0, 0, 255);
+                            ellipse(n * 75 + 50, height - 100, 50, 50);
+                        } else if(guesses[N][n] === 8) {
+                            fill(255, 0, 255);
+                            ellipse(n * 75 + 50, height - 100, 50, 50);
+                        } else if(guesses[N][n] === 9) {
+                            fill(0);
+                            ellipse(n * 75 + 50, height - 100, 50, 50);
+                        } else {
+                            fill(255);
+                            ellipse(n * 75 + 50, height - 100, 50, 50);
+                        }
+                    } else {
+                        if(guesses[N][n] === 1) {
+                            fill (130, 70, 0);
+                            ellipse(n * 55 + 115, 30 + 60 * N, 40, 40);
+                        } else if(guesses[N][n] === 2) {
+                            fill(255, 0, 0);
+                            ellipse(n * 55 + 115, 30 + 60 * N, 40, 40);
+                        } else if(guesses[N][n] === 3) {
+                            fill(255, 128, 0);
+                            ellipse(n * 55 + 115, 30 + 60 * N, 40, 40);
+                        } else if(guesses[N][n] === 4) {
+                            fill(255, 255, 0);
+                            ellipse(n * 55 + 115, 30 + 60 * N, 40, 40);
+                        } else if(guesses[N][n] === 5) {
+                            fill(0, 255, 0);
+                            ellipse(n * 55 + 115, 30 + 60 * N, 40, 40);
+                        } else if(guesses[N][n] === 6) {
+                            fill(0, 255, 255);
+                            ellipse(n * 55 + 115, 30 + 60 * N, 40, 40);
+                        } else if(guesses[N][n] === 7) {
+                            fill(0, 0, 255);
+                            ellipse(n * 55 + 115, 30 + 60 * N, 40, 40);
+                        } else if(guesses[N][n] === 8) {
+                           fill(255, 0, 255);
+                            ellipse(n * 55 + 115, 30 + 60 * N, 40, 40);
+                        } else if(guesses[N][n] === 9) {
+                           fill(0);
+                            ellipse(n * 55 + 115, 30 + 60 * N, 40, 40);
+                        } else {
+                            fill(255);
+                            ellipse(n * 55 + 115, 30 + 60 * N, 40, 40);
+                        }
+                    }
+                }
+            }
+            
+            //Text
+            textSize(40);
+            for(var t = 0; t <= guessNum; t++) {
+                if(t !== guessNum) {
+                    fill(0);
+                    text(rightPos[t], 380, 45 + 60 * t);
+                    fill(255);
+                    text(rightCol[t], 415, 45 + 60 * t);
+                    fill(0);
+                    text(t + 1, 15, 45 + 60 * t)
+                }
+            }
+            if(winToggle) {
+                fill(125, 65, 0)
+                rect(30, height - 140, 390, 120, 30);
+                fill(100, 50, 0);
+                rect(45, height - 70, 360, 40, 20);
+                fill(0);
+                textSize(25);
+                text("Congratulations!! You won in " + guessNum + "\nturns!!      Average: " + averageScore(), 50, height - 110);
+                fill(0, 255, 0);
+                textSize(25);
+                text("Play Again", 163, height - 40);
+            } else if(restartConfirm) {
+                fill(125, 65, 0)
+                rect(30, height - 140, 390, 120, 30);
+                fill(100, 50, 0);
+                rect(45, height - 70, 175, 40, 20);
+                rect(230, height - 70, 175, 40, 20);
+                fill(0);
+                textSize(25);
+                text("Are you sure you would like to\n                  restart?", 60, height - 110);
+                if (height === 150) {
+                    fill(0, 255, 0);
+                    textSize(12);
+                    text("What!! Why is this button even\n     here? Nothing happened!", 50, 100);
+                    fill(255, 100, 100);
+                    text("Yes, I need to restart before\n          anything happens.", 240, 100);
+                } else {
+                    fill(0, 255, 0);
+                    textSize(25);
+                    text("No", 115, height - 40);
+                    fill(255, 100, 100);
+                    text("Yes", 295, height - 40);
+                }
+            }
+        };
+     }
+    };
+
+    var canvas = document.getElementById("mycanvas"); 
+
+    var processingInstance = new Processing(canvas, sketchProc); 
+ </script>
+<p>©2019 Jason Foundation - All rights reserved</p>
+
+</html>
